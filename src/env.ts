@@ -9,6 +9,7 @@ const envSchema = z.object({
 	DATABASE_DB: z.string(),
 	DATABASE_PORT: z.coerce.number().default(5432),
 	DATABASE_HOST: z.string(),
+	JWT_SECRET: z.string(),
 });
 
 const _env = envSchema.safeParse(process.env);
