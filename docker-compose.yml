@@ -1,0 +1,16 @@
+name: 'nodejs-tests'
+services:
+  nodejs-tests-db:
+    image: bitnami/postgresql:latest
+    restart: unless-stopped
+    environment:
+      - POSTGRESQL_USERNAME=nodejs-tests-db
+      - POSTGRESQL_PASSWORD=nodejs-tests-db-pw
+      - POSTGRESQL_DATABASE=nodejs-tests-db
+    ports:
+      - 5432:5432
+    volumes:
+      - nodejs-tests-db-data:/bitnami/postgresql
+
+volumes:
+  nodejs-tests-db-data:
