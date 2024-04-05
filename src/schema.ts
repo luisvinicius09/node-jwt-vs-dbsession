@@ -1,9 +1,9 @@
-import { pgTableCreator, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { integer, pgTableCreator, serial, timestamp, varchar } from 'drizzle-orm/pg-core';
 
 export const pgTable = pgTableCreator((name) => `nodejs-tests-db-${name}`);
 
 export const users = pgTable('users', {
-	id: varchar('id').unique().notNull().primaryKey(),
+	id: serial('id').unique().primaryKey(),
 	name: varchar('name'),
 	email: varchar('email').unique().notNull(),
 	password: varchar('password').notNull(),
