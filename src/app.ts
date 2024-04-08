@@ -4,13 +4,19 @@ import { db } from './database';
 import { users } from './schema';
 import { eq } from 'drizzle-orm';
 import { compare, hash } from 'bcrypt';
-import { sign } from 'jsonwebtoken';
+import { sign, verify } from 'jsonwebtoken';
 import { env } from './env';
+import { verifyJwt } from './middlewares/verify-jwt';
+import cookie from '@fastify/cookie';
 
 export const app = fastify();
 
+app.register(cookie, {
+	secret: 'my-secret-42321',
+});
+
 app.get('/', (req, reply) => {
-	return reply.send({ message: 'Hello to new world' });
+	return reply.send({ message: 'Hello to new free world' });
 });
 
 app.post('/register-user', async (req, reply) => {
@@ -88,5 +94,12 @@ app.post('/login-with-jwt', async (req, reply) => {
 		expiresIn: '60 * 60',
 	});
 
-	return reply.send({ message: 'Logged In!', token });
+	return reply.send({ message: 'Logged In!' }).setCookie('Authorization', `Bearer ${token}`, {
+		httpOnly: true,
+		secure: true,
+	});
+});
+
+app.get('/dashboard', { onRequest: [verifyJwt] }, async (req, reply) => {
+	return reply.send({ message: 'Logged In!', secretStuff: 'Wow dashboard data' });
 });
