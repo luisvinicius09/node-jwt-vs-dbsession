@@ -2,7 +2,7 @@ import { app } from '@/app';
 import { client } from './database';
 import { env } from './env';
 
-async function main() {
+export async function bootstrap() {
 	await client.connect().then(() => console.log('Connected to database!'));
 
 	app
@@ -13,4 +13,4 @@ async function main() {
 		.then(() => console.log('🎉 Server is running!'));
 }
 
-main();
+bootstrap();
