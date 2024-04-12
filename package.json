@@ -27,6 +27,7 @@
 		"jsonwebtoken": "9.0.2",
 		"pg": "8.11.5",
 		"postgres": "3.4.4",
+		"pug": "3.0.2",
 		"zod": "3.21.4"
 	},
 	"devDependencies": {
