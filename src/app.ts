@@ -105,10 +105,13 @@ app.post('/login-with-jwt', async (req, reply) => {
 			}
 		);
 
-		return reply.send({ message: 'Logged In!' }).setCookie('Authorization', `Bearer ${token}`, {
-			httpOnly: true,
-			secure: true,
-		});
+		return reply
+			.setCookie('Authorization', `Bearer ${token}`, {
+				httpOnly: true,
+				secure: true,
+				signed: true,
+			})
+			.send({ message: 'Logged In!' });
 	} catch (err) {
 		console.error(err);
 
