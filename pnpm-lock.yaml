@@ -8,6 +8,9 @@ dependencies:
   '@fastify/cookie':
     specifier: 9.3.1
     version: 9.3.1
+  '@fastify/view':
+    specifier: 9.0.0
+    version: 9.0.0
   bcrypt:
     specifier: 5.1.1
     version: 5.1.1
@@ -55,6 +58,9 @@ devDependencies:
   '@types/pg':
     specifier: 8.11.4
     version: 8.11.4
+  '@types/pug':
+    specifier: 2.0.10
+    version: 2.0.10
   '@types/supertest':
     specifier: 6.0.2
     version: 6.0.2
@@ -1037,6 +1043,13 @@ packages:
       fast-json-stringify: 5.7.0
     dev: false
 
+  /@fastify/view@9.0.0:
+    resolution: {integrity: sha512-4KSM75Ad7Q9adQWJK17XAJlmwNE9HhIe8TdSTnvFzDvt0aOwmS4iY6k+Xd4NWuEk0JbteS6kzo0eZOr0ZZgPVg==}
+    dependencies:
+      fastify-plugin: 4.5.1
+      hashlru: 2.3.0
+    dev: false
+
   /@humanwhocodes/config-array@0.11.10:
     resolution: {integrity: sha512-KVVjQmNUepDVGXNuoRRdmmEjruj0KfiGSbS8LVc12LMsWDQzRXJ0qdhN8L8uUigKpfEHRhlaQFY0ib1tnUbNeQ==}
     engines: {node: '>=10.10.0'}
@@ -1374,6 +1387,10 @@ packages:
       '@types/node': 20.4.2
       pg-protocol: 1.6.1
       pg-types: 4.0.2
+
+  /@types/pug@2.0.10:
+    resolution: {integrity: sha512-Sk/uYFOBAB7mb74XcpizmH0KOR2Pv3D2Hmrh1Dmy5BmK3MpdSa5kqZcg6EKBdklU0bFXX9gCfzvpnyUehrPIuA==}
+    dev: true
 
   /@types/semver@7.5.0:
     resolution: {integrity: sha512-G8hZ6XJiHnuhQKR7ZmysCeJWE08o8T0AXtk5darsCaTVsYZhhgUrq53jizaR2FvsoeCwJhlmwTjkXBY5Pn/ZHw==}
@@ -3940,6 +3957,10 @@ packages:
     engines: {node: '>= 0.4.0'}
     dependencies:
       function-bind: 1.1.1
+
+  /hashlru@2.3.0:
+    resolution: {integrity: sha512-0cMsjjIC8I+D3M44pOQdsy0OHXGLVz6Z0beRuufhKa0KfaD2wGwAev6jILzXsd3/vpnNQJmWyZtIILqM1N+n5A==}
+    dev: false
 
   /hasown@2.0.2:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}

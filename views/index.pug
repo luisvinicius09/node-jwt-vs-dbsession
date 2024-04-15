@@ -1,0 +1,20 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset='utf-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1')
+    title My App
+
+  body
+    h1 my app
+
+    form(hx-post="/login-with-jwt", hx-ext='json-enc')
+      input(name="name", placeholder="Name")
+      input(name="email", placeholder="Email")
+      input(name="password", placeholder="Password")
+      button(type="submit") Submit
+    
+    button(type="button", hx-get="/feed") Get Feed
+
+  script(src="https://unpkg.com/htmx.org@1.9.11")
+  script(src="https://unpkg.com/htmx.org@1.9.11/dist/ext/json-enc.js")

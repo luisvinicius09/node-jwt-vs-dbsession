@@ -8,6 +8,8 @@ import { sign, verify } from 'jsonwebtoken';
 import { env } from './env';
 import { verifyJwt } from './middlewares/verify-jwt';
 import cookie from '@fastify/cookie';
+import view from '@fastify/view';
+import pug from 'pug';
 
 export const app = fastify();
 
@@ -15,9 +17,21 @@ app.register(cookie, {
 	secret: 'my-secret-42321',
 });
 
+app.register(view, {
+	engine: {
+		pug: pug,
+	}
+})
+
 app.get('/', (req, reply) => {
-	return reply.send({ message: 'Hello to new free world' });
+	return reply.view('./views/index.pug');
 });
+
+app.get('/feed', (req, reply) => {
+	console.log(req.cookies);
+	
+	return reply.send({ message: 'Hello to new free world' });
+})
 
 app.post('/register-user', async (req, reply) => {
 	const registerUserSchema = z.object({
@@ -105,13 +119,19 @@ app.post('/login-with-jwt', async (req, reply) => {
 			}
 		);
 
-		return reply
-			.setCookie('Authorization', `Bearer ${token}`, {
-				httpOnly: true,
-				secure: true,
-				signed: true,
-			})
-			.send({ message: 'Logged In!' });
+		// return reply
+		// 	.setCookie('Authorization', `Bearer ${token}`, {
+		// 		httpOnly: true,
+		// 		secure: true,
+		// 		signed: true,
+		// 	})
+		// 	.send({ message: 'Logged In!' });
+		return reply.send({
+			access_token: token,
+			token_type: "Bearer",
+			expires_in: '3600',
+			refresh_token: "_"
+		})
 	} catch (err) {
 		console.error(err);
 
