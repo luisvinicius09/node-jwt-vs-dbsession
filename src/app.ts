@@ -4,10 +4,11 @@ import { db } from './database';
 import { users } from './schema';
 import { eq } from 'drizzle-orm';
 import { compare, hash } from 'bcrypt';
-import { sign, verify } from 'jsonwebtoken';
+import { JwtPayload, sign, verify } from 'jsonwebtoken';
 import { env } from './env';
 import { verifyJwt } from './middlewares/verify-jwt';
 import cookie from '@fastify/cookie';
+import fastifyJwt from '@fastify/jwt';
 import view from '@fastify/view';
 import pug from 'pug';
 
@@ -17,11 +18,15 @@ app.register(cookie, {
 	secret: 'my-secret-42321',
 });
 
+app.register(fastifyJwt, {
+	secret: env.JWT_SECRET,
+});
+
 app.register(view, {
 	engine: {
 		pug: pug,
-	}
-})
+	},
+});
 
 app.get('/', (req, reply) => {
 	return reply.view('./views/index.pug');
@@ -29,9 +34,9 @@ app.get('/', (req, reply) => {
 
 app.get('/feed', (req, reply) => {
 	console.log(req.cookies);
-	
+
 	return reply.send({ message: 'Hello to new free world' });
-})
+});
 
 app.post('/register-user', async (req, reply) => {
 	const registerUserSchema = z.object({
@@ -111,11 +116,17 @@ app.post('/login-with-jwt', async (req, reply) => {
 			return reply.status(400).send({ message: 'Email or password invalid!' });
 		}
 
-		const token = sign(
-			{ name: user.name, email: user.email, issueAt: Date.now() },
-			env.JWT_SECRET,
+		const token = await reply.jwtSign(
+			{ name: user.name, issueAt: Date.now() },
 			{
-				expiresIn: '1h',
+				sign: { expiresIn: '1h', sub: user.id.toString() },
+			}
+		);
+
+		const refreshToken = await reply.jwtSign(
+			{ name: user.name, issueAt: Date.now() },
+			{
+				sign: { expiresIn: '7d', sub: user.id.toString() },
 			}
 		);
 
@@ -126,17 +137,44 @@ app.post('/login-with-jwt', async (req, reply) => {
 		// 		signed: true,
 		// 	})
 		// 	.send({ message: 'Logged In!' });
+
 		return reply.send({
 			access_token: token,
-			token_type: "Bearer",
+			token_type: 'Bearer',
 			expires_in: '3600',
-			refresh_token: "_"
-		})
+			refresh_token: refreshToken,
+		});
 	} catch (err) {
 		console.error(err);
 
 		return reply.status(500).send({ message: 'Internal server error' });
 	}
+});
+
+app.post('/refresh-token', { onRequest: [verifyJwt] }, async (req, reply) => {
+	//! Can save refresh token on database for future invalidations.
+	const { name, sub } = req.user;
+
+	const token = await reply.jwtSign(
+		{ name: name, issueAt: Date.now() },
+		{
+			sign: { expiresIn: '1h', sub: sub },
+		}
+	);
+
+	const refreshToken = await reply.jwtSign(
+		{ name: name, issueAt: Date.now() },
+		{
+			sign: { expiresIn: '7d', sub: sub },
+		}
+	);
+
+	return reply.send({
+		access_token: token,
+		token_type: 'Bearer',
+		expires_in: '3600',
+		refresh_token: refreshToken,
+	});
 });
 
 app.get('/dashboard', { onRequest: [verifyJwt] }, async (req, reply) => {
