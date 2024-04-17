@@ -12,7 +12,9 @@ import fastifyJwt from '@fastify/jwt';
 import view from '@fastify/view';
 import pug from 'pug';
 
-export const app = fastify();
+export const app = fastify({
+	logger: true,
+});
 
 app.register(cookie, {
 	secret: 'my-secret-42321',
@@ -20,6 +22,10 @@ app.register(cookie, {
 
 app.register(fastifyJwt, {
 	secret: env.JWT_SECRET,
+	cookie: {
+		cookieName: 'refreshToken',
+		signed: false,
+	},
 });
 
 app.register(view, {
@@ -119,7 +125,7 @@ app.post('/login-with-jwt', async (req, reply) => {
 		const token = await reply.jwtSign(
 			{ name: user.name, issueAt: Date.now() },
 			{
-				sign: { expiresIn: '1h', sub: user.id.toString() },
+				sign: { expiresIn: '30s', sub: user.id.toString() },
 			}
 		);
 
@@ -130,20 +136,19 @@ app.post('/login-with-jwt', async (req, reply) => {
 			}
 		);
 
-		// return reply
-		// 	.setCookie('Authorization', `Bearer ${token}`, {
-		// 		httpOnly: true,
-		// 		secure: true,
-		// 		signed: true,
-		// 	})
-		// 	.send({ message: 'Logged In!' });
-
-		return reply.send({
-			access_token: token,
-			token_type: 'Bearer',
-			expires_in: '3600',
-			refresh_token: refreshToken,
-		});
+		return reply
+			.setCookie('refreshToken', refreshToken, {
+				path: '/',
+				httpOnly: true,
+				secure: false,
+				sameSite: true,
+			})
+			.status(200)
+			.send({
+				access_token: token,
+				token_type: 'Bearer',
+				expires_in: '3600',
+			});
 	} catch (err) {
 		console.error(err);
 
@@ -151,30 +156,45 @@ app.post('/login-with-jwt', async (req, reply) => {
 	}
 });
 
-app.post('/refresh-token', { onRequest: [verifyJwt] }, async (req, reply) => {
+app.post('/refresh-token', async (req, reply) => {
 	//! Can save refresh token on database for future invalidations.
-	const { name, sub } = req.user;
+	try {
+		await req.jwtVerify({ onlyCookie: true });
 
-	const token = await reply.jwtSign(
-		{ name: name, issueAt: Date.now() },
-		{
-			sign: { expiresIn: '1h', sub: sub },
-		}
-	);
+		const { name, sub } = req.user;
 
-	const refreshToken = await reply.jwtSign(
-		{ name: name, issueAt: Date.now() },
-		{
-			sign: { expiresIn: '7d', sub: sub },
-		}
-	);
+		const token = await reply.jwtSign(
+			{ name: name, issueAt: Date.now() },
+			{
+				sign: { expiresIn: '1h', sub: sub },
+			}
+		);
 
-	return reply.send({
-		access_token: token,
-		token_type: 'Bearer',
-		expires_in: '3600',
-		refresh_token: refreshToken,
-	});
+		const refreshToken = await reply.jwtSign(
+			{ name: name, issueAt: Date.now() },
+			{
+				sign: { expiresIn: '7d', sub: sub },
+			}
+		);
+
+		return reply
+			.setCookie('refreshToken', refreshToken, {
+				path: '/',
+				httpOnly: true,
+				secure: false,
+				sameSite: true,
+			})
+			.status(200)
+			.send({
+				access_token: token,
+				token_type: 'Bearer',
+				expires_in: '3600',
+			});
+	} catch (err) {
+		console.error(err);
+
+		return reply.status(401).send({ message: 'Unauthorized' });
+	}
 });
 
 app.get('/dashboard', { onRequest: [verifyJwt] }, async (req, reply) => {

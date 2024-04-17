@@ -8,7 +8,15 @@ export async function verifyJwt(
 	done: DoneFuncWithErrOrRes
 ) {
 	try {
-		await req.jwtVerify({ onlyCookie: true });
+		const authHeader = req.headers.authorization;
+
+		if (!authHeader) {
+			return reply
+				.status(401)
+				.send({ message: 'Unauthorized', error: 'Missing Authorization Header' });
+		}
+
+		await req.jwtVerify();
 
 		done();
 	} catch (err) {
